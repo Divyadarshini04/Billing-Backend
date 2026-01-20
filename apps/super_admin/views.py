@@ -21,6 +21,12 @@ from .serializers import (
     ActivityLogSerializer,
     UnitSerializer,
 )
+#from rest_framework.views import APIView
+#from rest_framework.response import Response
+#from rest_framework import status
+from rest_framework_simplejwt.tokens import RefreshToken
+from apps.auth_app.models import User
+
 
 class DashboardStatsView(APIView):
     """Super Admin Dashboard Statistics"""
@@ -726,3 +732,45 @@ class SettingsAPIView(APIView):
         else:
             ip = request.META.get("REMOTE_ADDR")
         return ip
+
+
+class SuperAdminLoginView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def post(self, request):
+        phone = request.data.get("phone")
+        password = request.data.get("password")
+
+        if not phone or not password:
+            return Response(
+                {"detail": "Phone and password are required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            user = User.objects.get(
+                phone=phone,
+                is_super_admin=True,
+                is_active=True
+            )
+        except User.DoesNotExist:
+            return Response(
+                {"detail": "Invalid credentials"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        if not user.check_password(password):
+            return Response(
+                {"detail": "Invalid credentials"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        refresh = RefreshToken.for_user(user)
+
+        return Response({
+            "access": str(refresh.access_token),
+            "refresh": str(refresh),
+            "role": "SUPER_ADMIN"
+        })
+

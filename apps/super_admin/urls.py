@@ -6,6 +6,7 @@ from .views import (
     ActivityLogViewSet,
     UnitViewSet,
     SettingsAPIView,
+    SuperAdminLoginView,
 )
 from .dashboard_views import DashboardStatsView, GlobalReportsView
 from .reports import ReportsView
@@ -17,6 +18,7 @@ router.register(r"logs", ActivityLogViewSet, basename="activity-logs")
 router.register(r"units", UnitViewSet, basename="units")
 
 urlpatterns = [
+    path("login/", SuperAdminLoginView.as_view(), name="super-admin-login"),
     path("", include(router.urls)),
     path("settings-api/", SettingsAPIView.as_view(), name="settings-api"),
     path("dashboard-stats/", DashboardStatsView.as_view(), name="dashboard-stats"),
