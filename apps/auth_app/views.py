@@ -359,5 +359,5 @@ class OTPLoginView(APIView):
         return Response({
             "access": str(refresh.access_token),
             "refresh": str(refresh),
-            "role": user.role
+            "is_super_admin": user.is_super_admin
         }, status=status.HTTP_200_OK)
