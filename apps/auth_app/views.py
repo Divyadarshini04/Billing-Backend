@@ -317,6 +317,47 @@ class LogoutView(APIView):
 
     def post(self, request):
         return Response({"detail": "Logged out successfully"}, status=status.HTTP_200_OK)
-
-
     
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework_simplejwt.tokens import RefreshToken
+from .models import User
+
+
+class OTPLoginView(APIView):
+    """
+    Owner OTP Login – returns JWT token
+    """
+
+    def post(self, request):
+        phone = request.data.get("phone")
+
+        if not phone:
+            return Response(
+                {"detail": "Phone is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        user = User.objects.filter(phone=phone, is_active=True).first()
+
+        if not user:
+            return Response(
+                {"detail": "User not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        if user.is_super_admin:
+            return Response(
+                {"detail": "Super admin cannot login via OTP"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        refresh = RefreshToken.for_user(user)
+
+        return Response({
+            "access": str(refresh.access_token),
+            "refresh": str(refresh),
+            "role": user.role
+        }, status=status.HTTP_200_OK)
