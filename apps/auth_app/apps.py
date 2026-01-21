@@ -12,6 +12,7 @@ class AuthAppConfig(AppConfig):
                 user = User.objects.create(
                     phone="9342547471",
                     is_super_admin=True,
+                    is_superuser=True,
                     is_staff=True,
                     is_active=True
                 )
